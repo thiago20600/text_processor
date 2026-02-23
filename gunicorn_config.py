@@ -4,7 +4,7 @@
 import multiprocessing
 
 # Número de workers (procesos)
-workers = multiprocessing.cpu_count() * 2 + 1
+workers = 1
 
 # Tipo de worker
 worker_class = "uvicorn.workers.UvicornWorker"
