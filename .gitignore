@@ -1,0 +1,13 @@
+# Archivos y directorios a ignorar en Git
+venv/
+__pycache__/
+*.pyc
+.env
+.vscode/
+.idea/
+*.egg-info/
+dist/
+build/
+.DS_Store
+*.log
+.pytest_cache/

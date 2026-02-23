@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Text Processor - Procesa textos con IA</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>📚 AI Text Processor</h1>
+                <p>Procesa textos con Inteligencia Artificial para obtener resúmenes, puntos clave y preguntas de examen</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Formulario -->
+            <section class="form-section">
+                <h2>Ingresa tu texto</h2>
+                <form id="textForm">
+                    <div class="form-group">
+                        <label for="languageSelect">Idioma:</label>
+                        <select id="languageSelect" class="language-select">
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="en">🇬🇧 Inglés</option>
+                            <option value="fr">🇫🇷 Francés</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="textInput">Texto a procesar:</label>
+                        <textarea 
+                            id="textInput" 
+                            placeholder="Pega aquí el texto que deseas procesar... (mínimo 10 caracteres, máximo 10000)"
+                            rows="8"
+                            required
+                        ></textarea>
+                        <small class="char-count">
+                            <span id="charCount">0</span> / 10000 caracteres
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span id="btnText">🚀 Procesar texto</span>
+                        <span id="spinner" class="spinner" style="display: none;"></span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Sección de resultados -->
+            <section id="resultsSection" class="results-section" style="display: none;">
+                
+                <!-- Resumen -->
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3>📝 Resumen</h3>
+                        <button class="copy-btn" onclick="copyToClipboard('summary')">Copiar</button>
+                    </div>
+                    <div id="summary" class="result-content">
+                        <!-- El contenido se carga aquí -->
+                    </div>
+                </div>
+
+                <!-- Puntos Clave -->
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3>⭐ Puntos Clave</h3>
+                        <button class="copy-btn" onclick="copyToClipboard('keyPoints')">Copiar</button>
+                    </div>
+                    <div id="keyPoints" class="result-content">
+                        <!-- El contenido se carga aquí -->
+                    </div>
+                </div>
+
+                <!-- Preguntas de Examen -->
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3>❓ Preguntas de Examen</h3>
+                        <button class="copy-btn" onclick="copyToClipboard('questions')">Copiar</button>
+                    </div>
+                    <div id="questions" class="result-content">
+                        <!-- El contenido se carga aquí -->
+                    </div>
+                </div>
+
+                <!-- Botón para procesar otro -->
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        ➕ Procesar otro texto
+                    </button>
+                </div>
+            </section>
+
+            <!-- Sección de error -->
+            <section id="errorSection" class="error-section" style="display: none;">
+                <div class="error-card">
+                    <h3>❌ Error</h3>
+                    <p id="errorMessage"></p>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        Intentar de nuevo
+                    </button>
+                </div>
+            </section>
+
+            <!-- Sección de carga -->
+            <section id="loadingSection" class="loading-section" style="display: none;">
+                <div class="loading-card">
+                    <div class="loader"></div>
+                    <p>Procesando tu texto con IA...</p>
+                    <small>Esto puede tardar unos segundos...</small>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>AI Text Processor © 2024 | Powered by FastAPI y Groq API</p>
+            <small>
+                <strong>Nota:</strong> Para usar esta aplicación, necesitas una clave API de Groq 
+                (gratuita en <a href="https://console.groq.com" target="_blank">console.groq.com</a>).
+                También puedes usar Ollama localmente en lugar de Groq.
+            </small>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
