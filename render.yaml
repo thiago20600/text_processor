@@ -1,16 +1,19 @@
 # Archivo de configuración para desplegar en Render.com
 
-name: AI Text Processor
-runtime: python-3.11
 services:
   - type: web
     name: ai-text-processor
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    runtime: python-3.11
     plan: free
+    
+    # Comando para instalar dependencias
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    
+    # Comando para iniciar la aplicación (Linux/Mac)
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    
+    # Variables de entorno
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11
       - key: GROQ_API_KEY
         sync: false
