@@ -2,6 +2,7 @@
 # Ejecutar con: gunicorn -c gunicorn_config.py main:app
 
 import multiprocessing
+import os
 
 # Número de workers (procesos)
 workers = 1
@@ -10,7 +11,7 @@ workers = 1
 worker_class = "uvicorn.workers.UvicornWorker"
 
 # Host y puerto
-bind = "0.0.0.0:8000"
+bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"
 
 # Timeout
 timeout = 120

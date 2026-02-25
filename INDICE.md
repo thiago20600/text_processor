@@ -278,7 +278,7 @@ Marca según vayas leyendo:
 - Cambiar funcionalidad → `main.py`
 - Cambiar contenido HTML → `templates/index.html`
 - Agregar interactividad → `static/script.js`
-- Cambiar API key → `main.py` (línea ~50)
+- Cambiar API key → `.env` (`GROQ_API_KEY`)
 - Configurar variables → `.env` (copia desde `.env.example`)
 - Cambiar prompts de IA → `main.py` (función `process_text_with_ai`)
 
@@ -291,7 +291,7 @@ Marca según vayas leyendo:
 ║           1. Lee RESUMEN_VISUAL.md (2 min)                    ║
 ║           2. Lee INICIO_RAPIDO.md (3 min)                     ║
 ║           3. Ejecuta python main.py                           ║
-║           4. Abre http://localhost:8000                       ║
+║           4. Abre http://localhost:8001                       ║
 ║                                                                ║
 ║           ¡Éxito! 🚀                                          ║
 ║                                                                ║

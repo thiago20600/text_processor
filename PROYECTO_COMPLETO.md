@@ -72,14 +72,14 @@ Ve a: https://console.groq.com
 
 ### 2️⃣ Configurar (1 minuto)
 
-Abre `main.py` y reemplaza (línea ~50):
-```python
-GROQ_API_KEY = "tu_clave_groq_aqui"
-```
-
-Con tu clave:
-```python
-GROQ_API_KEY = "gsk_tu_clave_aqui..."
+Abre `.env` y configura:
+```env
+GROQ_API_KEY=gsk_tu_clave_aqui...
+SECRET_KEY=tu_clave_secreta
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=tu_password_mysql
+DB_NAME=text_processor_db
 ```
 
 ### 3️⃣ Ejecutar (1 minuto)
@@ -94,7 +94,7 @@ source venv/bin/activate
 python main.py
 ```
 
-Abre en navegador: **http://localhost:8000**
+Abre en navegador: **http://localhost:8001**
 
 ---
 
@@ -294,9 +294,9 @@ Tu aplicación está lista para usar.
 
 **Pasos finales:**
 
-1. ✏️ Edita `main.py` con tu API key
+1. ✏️ Configura `.env` con `GROQ_API_KEY`, `SECRET_KEY` y `DB_*`
 2. 🚀 Ejecuta `python main.py`
-3. 🌐 Abre `http://localhost:8000`
+3. 🌐 Abre `http://localhost:8001`
 4. 📝 ¡Comienza a procesar textos!
 
 ---

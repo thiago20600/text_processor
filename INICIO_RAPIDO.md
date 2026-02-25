@@ -10,14 +10,15 @@ Ve a [console.groq.com](https://console.groq.com) y:
 
 #### **Paso 2: Configurar la aplicación (1 min)**
 
-1. Abre `main.py` 
-2. Encuentra esta línea (alrededor de la línea 50):
-   ```python
-   GROQ_API_KEY = "tu_clave_groq_aqui"
-   ```
-3. Reemplázala con tu clave:
-   ```python
-   GROQ_API_KEY = "gsk_tu_clave_aqui..."
+1. Crea/edita el archivo `.env`
+2. Configura estas variables:
+   ```env
+   GROQ_API_KEY=gsk_tu_clave_aqui...
+   SECRET_KEY=tu_clave_secreta
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=tu_password_mysql
+   DB_NAME=text_processor_db
    ```
 
 #### **Paso 3: Ejecutar (1 min)**
@@ -38,7 +39,7 @@ python main.py
 
 Abre tu navegador en:
 ```
-http://localhost:8000
+http://localhost:8001
 ```
 
 ✅ ¡Listo! Pega un texto y comienza a procesar.
@@ -71,10 +72,10 @@ Si prefieres no usar APIs externas:
 
 ```
 proyecto/
-├── main.py              ← Aplicación principal (edit aquí la API key)
+├── main.py              ← Aplicación principal
 ├── requirements.txt     ← Dependencias
-├── setup.bat            ← Setup automático (Windows)
-├── setup.sh             ← Setup automático (macOS/Linux)
+├── .env.example         ← Plantilla de configuración
+├── check_setup.py       ← Verificación previa
 ├── templates/
 │   └── index.html       ← Interfaz web
 └── static/

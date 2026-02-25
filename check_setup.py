@@ -5,9 +5,11 @@ Verifica que todo está correctamente configurado
 """
 
 import sys
-import subprocess
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def check_python_version():
     """Verifica que Python 3.8+ está instalado"""
@@ -76,23 +78,61 @@ def check_dependencies():
     
     return True
 
-def check_groq_key():
-    """Verifica si la clave de Groq está configurada"""
-    from pathlib import Path
-    
-    # Leer main.py
-    main_content = Path("main.py").read_text()
-    
-    if 'GROQ_API_KEY = "tu_clave_groq_aqui"' in main_content:
-        print("⚠️  GROQ_API_KEY no está configurada")
-        print("   1. Ve a https://console.groq.com")
-        print("   2. Copia tu API key")
-        print("   3. En main.py línea ~50, reemplaza:")
-        print("      GROQ_API_KEY = \"tu_clave_aqui...\"")
+def check_env_file():
+    """Verifica que exista el archivo .env"""
+    if not Path(".env").exists():
+        print("❌ No se encontró archivo .env")
+        print("   Crea un .env con GROQ_API_KEY, SECRET_KEY y DB_*")
         return False
-    
-    print("✅ GROQ_API_KEY parece estar configurada")
+    print("✅ Archivo .env encontrado")
     return True
+
+
+def check_env_variables():
+    """Valida variables de entorno críticas"""
+    required_vars = [
+        "GROQ_API_KEY",
+        "SECRET_KEY",
+        "DB_HOST",
+        "DB_USER",
+        "DB_PASSWORD",
+        "DB_NAME",
+    ]
+
+    all_ok = True
+    for var in required_vars:
+        value = os.getenv(var, "").strip()
+        if value:
+            print(f"✅ {var} configurada")
+        else:
+            print(f"❌ {var} faltante o vacía")
+            all_ok = False
+
+    return all_ok
+
+
+def check_db_connection():
+    """Intenta conectarse a MySQL con las variables actuales"""
+    try:
+        import mysql.connector
+    except ImportError:
+        print("❌ mysql-connector-python no está instalado")
+        return False
+
+    try:
+        conn = mysql.connector.connect(
+            host=os.getenv("DB_HOST", "localhost"),
+            user=os.getenv("DB_USER", "root"),
+            password=os.getenv("DB_PASSWORD", ""),
+            database=os.getenv("DB_NAME", "text_processor_db"),
+            connection_timeout=5,
+        )
+        conn.close()
+        print("✅ Conexión a MySQL exitosa")
+        return True
+    except Exception as e:
+        print(f"❌ No se pudo conectar a MySQL: {e}")
+        return False
 
 def print_header():
     """Imprime el header"""
@@ -106,7 +146,7 @@ def print_footer(all_ok):
     if all_ok:
         print("✅ ¡Todo está listo!")
         print("\nEjecuta: python main.py")
-        print("Luego abre: http://localhost:8000")
+        print("Luego abre: http://localhost:8001")
     else:
         print("⚠️  Por favor soluciona los errores arriba")
     print("="*50 + "\n")
@@ -119,7 +159,9 @@ def main():
         ("Archivos necesarios", check_files_exist),
         ("Entorno virtual", check_venv),
         ("Dependencias", check_dependencies),
-        ("Configuración Groq", check_groq_key),
+        ("Archivo .env", check_env_file),
+        ("Variables de entorno", check_env_variables),
+        ("Conexión MySQL", check_db_connection),
     ]
     
     results = []

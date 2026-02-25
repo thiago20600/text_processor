@@ -3,10 +3,13 @@ Aplicación FastAPI para procesar textos con IA
 Genera resúmenes, puntos clave y preguntas de examen
 """
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, File, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import httpx
+import pytesseract
+from PIL import Image
+import io
 import json
 from typing import Optional, Dict
 import re
@@ -14,12 +17,25 @@ from collections import Counter
 import os
 import logging
 from functools import lru_cache
+import pytesseract
 from dotenv import load_dotenv
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from pdf2image import convert_from_bytes
+import fitz  # PyMuPDF
+from models import UserCreate, UserLogin, Token, SummarySave
+from auth import get_password_hash, authenticate_user, create_access_token, get_current_user
+from db import get_connection
 
 # Cargar variables de entorno
 load_dotenv()
+
+# Configurar ruta de Tesseract solo si se define explícitamente
+# (evita romper deploys Linux por rutas locales de Windows)
+tesseract_cmd = os.getenv("TESSERACT_CMD", "").strip()
+if tesseract_cmd:
+    pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+
 
 # Configurar logging
 logging.basicConfig(
@@ -38,10 +54,51 @@ app.state.limiter = limiter
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Configuración de la API de IA
+
+# Endpoint para OCR de imagen
+@app.post("/api/ocr")
+@limiter.limit("10/minute")
+async def ocr_image(request: Request, file: UploadFile = File(...)):
+    """Endpoint para extraer texto de una imagen usando OCR"""
+    try:
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents))
+        text = pytesseract.image_to_string(image, lang="spa+eng")
+        if not text.strip():
+            return {"success": False, "error": "No se detectó texto en la imagen."}
+        return {"success": True, "text": text}
+    except Exception as e:
+        logger.exception("Error procesando imagen para OCR")
+        return {"success": False, "error": f"Error procesando imagen: {str(e)}"}
+
+# Endpoint para OCR de PDF
+@app.post("/api/pdf-ocr")
+@limiter.limit("5/minute")
+async def ocr_pdf(request: Request, file: UploadFile = File(...)):
+    """Endpoint para extraer texto de un PDF usando OCR"""
+    try:
+        contents = await file.read()
+        # Intentar extraer texto directo (PDF digital)
+        text = ""
+        with fitz.open(stream=contents, filetype="pdf") as doc:
+            for page in doc:
+                text += page.get_text()
+        # Si no se extrajo texto (PDF escaneado), usar OCR
+        if not text.strip():
+            images = convert_from_bytes(contents)
+            for image in images:
+                text += pytesseract.image_to_string(image, lang="spa+eng") + "\n"
+        if not text.strip():
+            return {"success": False, "error": "No se detectó texto en el PDF."}
+        return {"success": True, "text": text}
+    except Exception as e:
+        logger.exception("Error procesando PDF para OCR")
+        return {"success": False, "error": f"Error procesando PDF: {str(e)}"}
+
+# Validar que la API key está configurada
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-# Validar que la API key está configurada
 if not GROQ_API_KEY:
     logger.error("GROQ_API_KEY no está configurada en variables de entorno")
     raise ValueError("GROQ_API_KEY no está configurada. Crea un archivo .env con tu clave.")
@@ -56,12 +113,44 @@ LANGUAGE_PROMPTS = {
     "fr": "Analysez le texte suivant et fournissez UNIQUEMENT une réponse JSON valide"
 }
 
+
+def get_summary_length_guidance(text: str, language: str) -> tuple[str, str]:
+    char_count = len(text or "")
+
+    if char_count <= 1000:
+        ranges = {
+            "es": ("2-3 oraciones", "2-3 oraciones"),
+            "en": ("2-3 sentences", "2-3 sentences"),
+            "fr": ("2-3 phrases", "2-3 phrases"),
+        }
+    elif char_count <= 4000:
+        ranges = {
+            "es": ("4-6 oraciones", "4-6 oraciones"),
+            "en": ("4-6 sentences", "4-6 sentences"),
+            "fr": ("4-6 phrases", "4-6 phrases"),
+        }
+    elif char_count <= 8000:
+        ranges = {
+            "es": ("6-8 oraciones", "6-8 oraciones"),
+            "en": ("6-8 sentences", "6-8 sentences"),
+            "fr": ("6-8 phrases", "6-8 phrases"),
+        }
+    else:
+        ranges = {
+            "es": ("8-10 oraciones", "8-10 oraciones"),
+            "en": ("8-10 sentences", "8-10 sentences"),
+            "fr": ("8-10 phrases", "8-10 phrases"),
+        }
+
+    return ranges[language]
+
 def create_analysis_prompt(text: str, language: str = "es") -> str:
     """
     Crea un prompt muy específico y estructurado que fuerza JSON como respuesta
     Soporta múltiples idiomas
     """
     lang = language.lower() if language.lower() in LANGUAGE_PROMPTS else "es"
+    summary_range_text, summary_example_text = get_summary_length_guidance(text, lang)
     
     if lang == "es":
         prompt = f"""Analiza el siguiente texto y proporciona una respuesta ÚNICAMENTE en formato JSON válido (sin texto adicional antes o después).
@@ -70,13 +159,13 @@ TEXTO A ANALIZAR:
 {text}
 
 INSTRUCCIONES:
-1. RESUMEN: Redacta un resumen de 2-3 oraciones que capture la esencia del texto sin copiarlo textualmente. Debe ser claro y conciso.
+1. RESUMEN: Redacta un resumen de {summary_range_text} que capture la esencia del texto sin copiarlo textualmente. Debe ser claro y conciso.
 2. PUNTOS_CLAVE: Genera exactamente 3 puntos clave principales. Cada punto debe ser una frase clara y específica (no genérica).
 3. PREGUNTAS: Crea exactamente 3 preguntas de examen que evalúen comprensión. Deben ser preguntas concretas basadas en el contenido específico.
 
 RESPONDE ÚNICAMENTE CON ESTE JSON (sin markdown, sin explicaciones):
 {{
-    "resumen": "Tu resumen aquí (2-3 oraciones)",
+    "resumen": "Tu resumen aquí ({summary_example_text})",
     "puntos_clave": [
         "Primer punto clave específico",
         "Segundo punto clave específico",
@@ -95,13 +184,13 @@ TEXT TO ANALYZE:
 {text}
 
 INSTRUCTIONS:
-1. SUMMARY: Write a 2-3 sentence summary capturing the essence without copying verbatim. Must be clear and concise.
+1. SUMMARY: Write a {summary_range_text} summary capturing the essence without copying verbatim. Must be clear and concise.
 2. KEY_POINTS: Generate exactly 3 main key points. Each should be clear and specific (not generic).
 3. QUESTIONS: Create exactly 3 exam questions evaluating comprehension. Must be concrete based on specific content.
 
 RESPOND ONLY WITH THIS JSON (no markdown, no explanations):
 {{
-    "resumen": "Your summary here (2-3 sentences)",
+    "resumen": "Your summary here ({summary_example_text})",
     "puntos_clave": [
         "First specific key point",
         "Second specific key point",
@@ -120,13 +209,13 @@ TEXTE À ANALYSER:
 {text}
 
 INSTRUCTIONS:
-1. RÉSUMÉ: Rédigez un résumé de 2-3 phrases capturant l'essence sans copier textuellement. Doit être clair et concis.
+1. RÉSUMÉ: Rédigez un résumé de {summary_range_text} capturant l'essence sans copier textuellement. Doit être clair et concis.
 2. POINTS_CLÉS: Générez exactement 3 points clés principaux. Chacun doit être clair et spécifique (pas générique).
 3. QUESTIONS: Créez exactement 3 questions d'examen évaluant la compréhension. Doivent être concrètes sur la base du contenu spécifique.
 
 RÉPONDEZ UNIQUEMENT AVEC CE JSON (pas de markdown, pas d'explications):
 {{
-    "resumen": "Votre résumé ici (2-3 phrases)",
+    "resumen": "Votre résumé ici ({summary_example_text})",
     "puntos_clave": [
         "Premier point clé spécifique",
         "Deuxième point clé spécifique",
@@ -385,6 +474,59 @@ async def health_check():
     """Endpoint para verificar que el servidor está activo"""
     return {"status": "ok"}
 
+
+@app.post("/api/register", response_model=Token)
+def register(user: UserCreate):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id FROM users WHERE username = %s", (user.username,))
+        if cursor.fetchone():
+            raise HTTPException(status_code=400, detail="El usuario ya existe")
+        hashed_pw = get_password_hash(user.password)
+        cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (user.username, hashed_pw))
+        conn.commit()
+        access_token = create_access_token(data={"sub": user.username})
+        return {"access_token": access_token, "token_type": "bearer"}
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.post("/api/token", response_model=Token)
+def login(form_data: UserLogin):
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
+    access_token = create_access_token(data={"sub": user['username']})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/api/save-summary")
+def save_summary(summary: SummarySave, user=Depends(get_current_user)):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO summaries (user_id, title, summary, key_points, questions) VALUES (%s, %s, %s, %s, %s)",
+            (user['id'], summary.title, summary.summary, summary.key_points, summary.questions)
+        )
+        conn.commit()
+        return {"success": True, "message": "Resumen guardado"}
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.get("/api/my-summaries")
+def get_my_summaries(user=Depends(get_current_user)):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT id, title, summary, key_points, questions, created_at FROM summaries WHERE user_id = %s ORDER BY created_at DESC", (user['id'],))
+        summaries = cursor.fetchall()
+        return {"success": True, "summaries": summaries}
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == "__main__":
     import uvicorn

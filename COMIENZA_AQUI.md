@@ -48,9 +48,9 @@ Tu aplicación **AI Text Processor** está lista para usar.
 
 ### PASO 2: Configura clave (1 min)
 ```
-1. Abre el archivo: main.py
-2. Busca: GROQ_API_KEY = "tu_clave_groq_aqui"
-3. Reemplaza con tu clave real
+1. Abre el archivo: .env
+2. Configura: GROQ_API_KEY=tu_clave_real
+3. Completa también SECRET_KEY y DB_* para login/guardado
 ```
 
 ### PASO 3: Ejecuta (1 min)
@@ -66,7 +66,7 @@ python main.py
 
 ### PASO 4: Usa la app
 ```
-Abre en navegador: http://localhost:8000
+Abre en navegador: http://localhost:8001
 ```
 
 ---
@@ -166,7 +166,7 @@ d:\PROGRAMAS2\nose\
 
 ### Ahora (Esta sesión)
 1. ✅ Obtén API key
-2. ✅ Configura en main.py
+2. ✅ Configura en .env
 3. ✅ Ejecuta `python main.py`
 4. ✅ Prueba en navegador
 5. ✅ Procesa un texto
@@ -184,9 +184,9 @@ d:\PROGRAMAS2\nose\
 - Comparte con otros
 
 ### Este mes
-- Agrega autenticación
-- Implementa base de datos
-- Crea historial de procesos
+- Endurece seguridad para deploy (rotar claves, variables por entorno)
+- Agrega tests automáticos
+- Exporta resultados a PDF
 - Integra más APIs de IA
 
 ---
@@ -354,9 +354,9 @@ python main.py
 ## 🚀 INICIAR AHORA
 
 1. Obtén API key en https://console.groq.com
-2. Edita main.py (línea ~50)
+2. Configura `.env` (GROQ_API_KEY + SECRET_KEY + DB_*)
 3. Ejecuta: `python main.py`
-4. Abre: http://localhost:8000
+4. Abre: http://localhost:8001
 5. ¡Disfruta!
 
 ---

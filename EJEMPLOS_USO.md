@@ -167,7 +167,7 @@ la manipulación de la verdad por parte del poder.
 ### 1. Abre la aplicación
 
 ```
-http://localhost:8000
+http://localhost:8001
 ```
 
 ### 2. Pega tu texto
@@ -261,7 +261,7 @@ venv\Scripts\activate
 python main.py
 
 # Ver en navegador
-start http://localhost:8000
+start http://localhost:8001
 
 # Instalar dependencias
 pip install -r requirements.txt
@@ -276,7 +276,7 @@ source venv/bin/activate
 python main.py
 
 # Ver en navegador
-open http://localhost:8000
+open http://localhost:8001
 
 # Instalar dependencias
 pip install -r requirements.txt
@@ -290,7 +290,7 @@ pip install -r requirements.txt
 
 **Request:**
 ```bash
-curl -X POST http://localhost:8000/api/process \
+curl -X POST http://localhost:8001/api/process \
   -H "Content-Type: application/json" \
   -d '{"text":"Tu texto aquí con más de 10 caracteres"}'
 ```

@@ -1,143 +1,70 @@
 # Guía: Mejoras Implementadas
 
-## ✅ Mejoras Aplicadas
+## ✅ Estado actual del proyecto
 
-### 1. **Seguridad - Variables de Entorno**
-✓ La API key ya no está hardcodeada en el código
-✓ Se carga desde archivo `.env` usando `python-dotenv`
+### 1) Seguridad y configuración por entorno
+- Variables sensibles en `.env` (`GROQ_API_KEY`, `SECRET_KEY`, `DB_*`)
+- Carga con `python-dotenv`
+- Autenticación JWT para endpoints privados
 
-**Uso:**
-```bash
-# Copiar archivo de ejemplo
-cp .env.example .env
+### 2) Autenticación completa en frontend y backend
+- Registro: `POST /api/register`
+- Login: `POST /api/token`
+- Logout en interfaz (limpia token local)
+- Estados visuales de sesión en botones del header
 
-# Editar .env y agregar tu API key de Groq
-GROQ_API_KEY=tu_clave_aqui
-```
+### 3) Persistencia de resúmenes por usuario
+- Guardado: `POST /api/save-summary`
+- Listado: `GET /api/my-summaries`
+- Al hacer clic en un resumen guardado, se reconstruyen y muestran:
+  - Resumen
+  - Puntos clave
+  - Preguntas
 
-### 2. **Rate Limiting**
-✓ Protege contra abusos limitando a **10 solicitudes por minuto**
-✓ Implementado con la librería `slowapi`
+### 4) Resumen adaptativo por longitud de texto
+- La amplitud del resumen se ajusta a la cantidad de caracteres del input
+- Rangos implementados:
+  - Hasta 1000: 2-3 oraciones
+  - 1001-4000: 4-6 oraciones
+  - 4001-8000: 6-8 oraciones
+  - Más de 8000: 8-10 oraciones
 
-**Resultado:** Si alguien intenta enviar más de 10 requests/minuto, recibirá un error 429 (Too Many Requests)
+### 5) OCR en imágenes y PDF
+- Imagen: `POST /api/ocr`
+- PDF: `POST /api/pdf-ocr`
+- Si el PDF no tiene texto extraíble, se aplica OCR
 
-### 3. **Logging Mejorado**
-✓ Sistema de logging profesional que registra:
-  - Solicitudes recibidas
-  - Procesamiento exitoso
-  - Errores con detalles
-  - Idioma utilizado
-  - Longitud de texto
+### 6) Robustez operativa
+- Rate limiting con `slowapi`
+- Logging de eventos y errores
+- Validaciones de longitud de texto
+- UI con feedback de carga y error
 
-**Benefit:** Debugging más fácil en producción
+## 🚀 Recomendaciones para deploy
 
-### 4. **Caché de Respuestas**
-✓ Implementado con `@lru_cache` para optimizar rendimiento
-✓ Evita procesar el mismo texto múltiples veces
+1. Definir variables de entorno obligatorias:
+   - `GROQ_API_KEY`
+   - `SECRET_KEY`
+   - `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
 
-### 5. **Soporte para Múltiples Idiomas**
-✓ Ahora acepta parámetro `language` en las solicitudes
-✓ Soporta: **Español (es)**, **Inglés (en)**, **Francés (fr)**
+2. Si usas OCR en Linux/containers, instalar paquetes del sistema:
+   - `tesseract-ocr`
+   - `poppler-utils`
 
-**Uso desde JavaScript:**
-```javascript
-const response = await fetch('/api/process', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        text: 'Tu texto aquí',
-        language: 'es'  // o 'en' o 'fr'
-    })
-});
-```
+3. Verificar conectividad MySQL:
+   - Usuario con permisos sobre la base
+   - `DB_PASSWORD` no vacío si tu servidor requiere contraseña
 
-### 6. **Modo Oscuro Automático**
-✓ Se activa automáticamente según preferencia del sistema
-✓ Colores optimizados para ojos en oscuridad
-✓ Mantiene contraste de accesibilidad
+## 📌 Mejoras completadas recientemente
 
-## 📦 Instalación de Nuevas Dependencias
+- [x] Login / registro / logout
+- [x] Guardado y recuperación de resúmenes
+- [x] Resumen adaptativo por longitud
+- [x] Correcciones de visibilidad del modal de autenticación
 
-Se han agregado dos nuevas librerías:
+## 🔜 Próximas mejoras sugeridas
 
-```bash
-pip install -r requirements.txt
-```
-
-**Nuevas dependencias:**
-- `python-dotenv==1.0.0` - Para variables de entorno
-- `slowapi==0.1.9` - Para rate limiting
-
-## 🚀 Uso Completo
-
-### Pasos para poner en funcionamiento:
-
-1. **Instalar dependencias:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **Configurar variables de entorno:**
-   ```bash
-   cp .env.example .env
-   # Editar .env con tu GROQ_API_KEY
-   ```
-
-3. **Iniciar la aplicación:**
-   ```bash
-   python main.py
-   ```
-
-4. **Acceder a:**
-   - Interfaz web: `http://localhost:8001`
-   - Health check: `http://localhost:8001/health`
-
-### Endpoint mejorado:
-
-```bash
-POST /api/process
-
-Body:
-{
-    "text": "Tu texto aquí",
-    "language": "es"  // Opcional: es, en, o fr
-}
-```
-
-## 📝 Logs en Consola
-
-Verás messages como:
-```
-2026-02-23 10:30:45,123 - __main__ - INFO - Aplicación iniciada correctamente
-2026-02-23 10:30:50,456 - __main__ - INFO - Solicitud de procesamiento recibida - Longitud: 245 caracteres, Idioma: es
-2026-02-23 10:30:52,789 - __main__ - INFO - Procesamiento completado exitosamente
-```
-
-## 🔒 Seguridad
-
-### Importante:
-- **Nunca** commits el archivo `.env` a git
-- El `.env` debe estar en `.gitignore`
-- Cada desarrollador y ambiente necesita su propio `.env`
-
-## ⚡ Rendimiento
-
-Con el caché implementado:
-- Textos idénticos se responden al instante
-- Se cachean hasta 128 combinaciones de (texto, idioma)
-- Reduce llamadas innecesarias a Groq API
-
-## 🌙 Modo Oscuro
-
-Se activa automáticamente según la configuración del sistema operativo:
-- **Windows:** Configuración > Personalización > Colores > Modo oscuro
-- **macOS:** System Preferences > General > Appearance (Dark)
-- **Linux:** Varía según el entorno (GNOME, KDE, etc.)
-
-## ✨ Próximas Mejoras Recomendadas
-
-- [✓] Agregar validación de input más robusta
-- [ ] Base de datos para persistencia
-- [ ] Autenticación de usuarios
-- [ ] Dashboard de estadísticas
 - [ ] Exportar resultados a PDF
+- [ ] Dashboard de actividad por usuario
+- [ ] Revocación/expiración avanzada de sesiones
+- [ ] Tests automáticos de endpoints críticos

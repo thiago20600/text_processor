@@ -1,130 +1,167 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Text Processor - Procesa textos con IA</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Text Processor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
+  <div class="full-bg py-5">
     <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1>📚 AI Text Processor</h1>
-                <p>Procesa textos con Inteligencia Artificial para obtener resúmenes, puntos clave y preguntas de examen</p>
+      <header class="panel panel-top mb-4 px-4 py-4">
+        <div class="row g-3 align-items-center">
+          <div class="col-12 col-md-8">
+            <h1 class="h3 mb-2 fw-semibold">📚 AI Text Processor</h1>
+            <p class="mb-0 text-light">Procesa textos con Inteligencia Artificial para obtener resúmenes, puntos clave y preguntas de examen</p>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="d-flex justify-content-md-end gap-2">
+              <button type="button" class="btn btn-sm btn-outline-light" id="headerRegisterBtn">Registrar</button>
+              <button type="button" class="btn btn-sm btn-outline-light" id="headerLoginBtn">Iniciar sesión</button>
+              <button type="button" class="btn btn-sm btn-outline-light" id="headerLogoutBtn" style="display:none;">Cerrar sesión</button>
             </div>
-        </header>
+          </div>
+        </div>
+      </header>
 
-        <!-- Main Content -->
-        <main class="main">
-            <!-- Formulario -->
-            <section class="form-section">
-                <h2>Ingresa tu texto</h2>
-                <form id="textForm">
-                    <div class="form-group">
-                        <label for="languageSelect">Idioma:</label>
-                        <select id="languageSelect" class="language-select">
-                            <option value="es">🇪🇸 Español</option>
-                            <option value="en">🇬🇧 Inglés</option>
-                            <option value="fr">🇫🇷 Francés</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="textInput">Texto a procesar:</label>
-                        <textarea 
-                            id="textInput" 
-                            placeholder="Pega aquí el texto que deseas procesar... (mínimo 10 caracteres, máximo 10000)"
-                            rows="8"
-                            required
-                        ></textarea>
-                        <small class="char-count">
-                            <span id="charCount">0</span> / 10000 caracteres
-                        </small>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <span id="btnText">🚀 Procesar texto</span>
-                        <span id="spinner" class="spinner" style="display: none;"></span>
-                    </button>
-                </form>
+      <main class="row g-4">
+        <aside class="col-12 col-md-6 col-lg-4">
+          <section class="panel panel-form h-100 p-4" id="sidebarSummaries">
+            <h2 class="h5 mb-3">🗂️ Historial</h2>
+            <ul id="summaryList" class="list-unstyled mb-0"></ul>
+          </section>
+        </aside>
+
+        <div class="col-12 col-md-6 col-lg-8">
+          <section class="panel panel-form form-section p-4">
+            <h2 class="h4 mb-4">Ingresa tu texto</h2>
+
+            <form id="textForm">
+              <div class="mb-4">
+                <label for="languageSelect" class="form-label mb-2">Idioma:</label>
+                <select id="languageSelect" class="form-select input-dark">
+                  <option value="es" selected>Español</option>
+                  <option value="en">Inglés</option>
+                  <option value="fr">Francés</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label for="textInput" class="form-label mb-2">Texto a procesar:</label>
+                <textarea id="textInput" name="textInput" class="form-control textarea-dark" rows="7" placeholder="Pega aquí el texto que deseas procesar... (mínimo 10 caracteres, máximo 10000)"></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label for="imageInput" class="form-label mb-2">O sube una imagen:</label>
+                <input type="file" id="imageInput" class="form-control input-dark mb-2" accept="image/*" />
+                <button type="button" id="ocrBtn" class="btn btn-outline-light btn-sm">📷 Leer texto de imagen</button>
+                <small id="ocrStatus" class="d-block mt-2" style="display:none;"></small>
+              </div>
+
+              <div class="mb-3">
+                <label for="pdfInput" class="form-label mb-2">O sube un PDF:</label>
+                <input type="file" id="pdfInput" class="form-control input-dark mb-2" accept="application/pdf" />
+                <button type="button" id="pdfOcrBtn" class="btn btn-outline-light btn-sm">📄 Leer texto de PDF</button>
+                <small id="pdfOcrStatus" class="d-block mt-2" style="display:none;"></small>
+              </div>
+
+              <div class="mb-4">
+                <small class="counter-text"><span id="charCount">0</span> / 10000 caracteres</small>
+              </div>
+
+              <button type="submit" class="btn btn-process w-100">
+                <span id="btnText">🚀 Procesar texto</span>
+                <span id="spinner" class="spinner-border spinner-border-sm ms-2" style="display:none;"></span>
+              </button>
+            </form>
+
+            <section id="loadingSection" class="mt-4" style="display:none;">
+              <div class="text-center py-3">
+                <div class="spinner-border text-light mb-2" role="status"></div>
+                <p class="mb-0">Procesando tu texto con IA...</p>
+              </div>
             </section>
 
-            <!-- Sección de resultados -->
-            <section id="resultsSection" class="results-section" style="display: none;">
-                
-                <!-- Resumen -->
-                <div class="result-card">
-                    <div class="result-header">
-                        <h3>📝 Resumen</h3>
-                        <button class="copy-btn" onclick="copyToClipboard('summary')">Copiar</button>
-                    </div>
-                    <div id="summary" class="result-content">
-                        <!-- El contenido se carga aquí -->
-                    </div>
-                </div>
-
-                <!-- Puntos Clave -->
-                <div class="result-card">
-                    <div class="result-header">
-                        <h3>⭐ Puntos Clave</h3>
-                        <button class="copy-btn" onclick="copyToClipboard('keyPoints')">Copiar</button>
-                    </div>
-                    <div id="keyPoints" class="result-content">
-                        <!-- El contenido se carga aquí -->
-                    </div>
-                </div>
-
-                <!-- Preguntas de Examen -->
-                <div class="result-card">
-                    <div class="result-header">
-                        <h3>❓ Preguntas de Examen</h3>
-                        <button class="copy-btn" onclick="copyToClipboard('questions')">Copiar</button>
-                    </div>
-                    <div id="questions" class="result-content">
-                        <!-- El contenido se carga aquí -->
-                    </div>
-                </div>
-
-                <!-- Botón para procesar otro -->
-                <div class="action-buttons">
-                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                        ➕ Procesar otro texto
-                    </button>
-                </div>
+            <section id="errorSection" class="mt-3" style="display:none;">
+              <div class="alert alert-danger mb-0">
+                <p id="errorMessage" class="mb-2"></p>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="resetForm()">Intentar de nuevo</button>
+              </div>
             </section>
 
-            <!-- Sección de error -->
-            <section id="errorSection" class="error-section" style="display: none;">
-                <div class="error-card">
-                    <h3>❌ Error</h3>
-                    <p id="errorMessage"></p>
-                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                        Intentar de nuevo
-                    </button>
+            <section id="resultsSection" class="mt-4" style="display:none;">
+              <div class="panel panel-form p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h3 class="h6 mb-0">📝 Resumen</h3>
+                  <button class="btn btn-sm btn-outline-light" onclick="copyToClipboard('summary', this)">Copiar</button>
                 </div>
-            </section>
+                <div id="summary"></div>
+              </div>
 
-            <!-- Sección de carga -->
-            <section id="loadingSection" class="loading-section" style="display: none;">
-                <div class="loading-card">
-                    <div class="loader"></div>
-                    <p>Procesando tu texto con IA...</p>
-                    <small>Esto puede tardar unos segundos...</small>
+              <div class="panel panel-form p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h3 class="h6 mb-0">⭐ Puntos clave</h3>
+                  <button class="btn btn-sm btn-outline-light" onclick="copyToClipboard('keyPoints', this)">Copiar</button>
                 </div>
-            </section>
-        </main>
+                <ul id="keyPoints" class="mb-0"></ul>
+              </div>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <p>AI Text Processor © 2024 | Powered by FastAPI y Groq API</p>
-            <small>
-                <strong>Nota:</strong> Para usar esta aplicación, necesitas una clave API de Groq 
-                (gratuita en <a href="https://console.groq.com" target="_blank">console.groq.com</a>).
-                También puedes usar Ollama localmente en lugar de Groq.
-            </small>
-        </footer>
+              <div class="panel panel-form p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h3 class="h6 mb-0">❓ Preguntas</h3>
+                  <button class="btn btn-sm btn-outline-light" onclick="copyToClipboard('questions', this)">Copiar</button>
+                </div>
+                <ul id="questions" class="mb-0"></ul>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-process" id="saveSummaryBtn">💾 Guardar resumen</button>
+                <button type="button" class="btn btn-outline-light" onclick="resetForm()">➕ Procesar otro texto</button>
+              </div>
+              <div id="saveSummaryStatus" class="mt-2" style="display:none;"></div>
+            </section>
+          </section>
+        </div>
+      </main>
+
+      <footer class="panel panel-footer mt-4 px-4 py-3 text-center">
+        <p class="mb-2">AI Text Processor © 2024 | Powered by FastAPI y Groq API</p>
+        <p class="mb-0 small">
+          <strong>Nota:</strong> Para usar esta aplicación, necesitas una clave API de Groq
+          (gratuita en <a href="#">console.groq.com</a>). También puedes usar Ollama localmente en
+          lugar de Groq.
+        </p>
+      </footer>
+
     </div>
+  </div>
 
-    <script src="/static/script.js"></script>
+  <div class="modal" id="authModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="authTitle">Iniciar sesión</h2>
+          <button type="button" class="btn-close" id="closeAuthModal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="authForm" data-mode="login">
+            <div class="mb-2">
+              <input id="authUsername" class="form-control" type="text" placeholder="Usuario" required>
+            </div>
+            <div class="mb-2">
+              <input id="authPassword" class="form-control" type="password" placeholder="Contraseña" required>
+            </div>
+            <button id="authSubmitBtn" class="btn btn-primary w-100" type="submit">Entrar</button>
+          </form>
+          <p id="authSwitchText" class="mb-1 mt-2">¿No tienes cuenta? <a href="#" id="switchToRegister">Regístrate</a></p>
+          <div id="authStatus"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/static/script.js"></script>
 </body>
 </html>

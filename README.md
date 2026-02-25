@@ -10,7 +10,11 @@ Una aplicación web simple y potente que procesa textos usando inteligencia arti
 - ✅ Interfaz web moderna y responsiva
 - ✅ Procesa textos de hasta 10,000 caracteres
 - ✅ Genera resúmenes, puntos clave y preguntas
+- ✅ Longitud del resumen adaptativa según cantidad de caracteres
 - ✅ Soporte para múltiples APIs de IA (Groq, Ollama)
+- ✅ Autenticación de usuarios (registro / login / logout)
+- ✅ Guardado y consulta de resúmenes por usuario
+- ✅ OCR de imágenes y PDF
 - ✅ Botón para copiar resultados
 - ✅ Feedback visual de carga y errores
 - ✅ Totalmente personalizable
@@ -54,10 +58,15 @@ pip install -r requirements.txt
 1. Ve a [console.groq.com](https://console.groq.com)
 2. Crea una cuenta gratuita
 3. Copia tu API key
-4. Abre `main.py` y reemplaza esta línea:
-   ```python
-   GROQ_API_KEY = "tu_clave_groq_aqui"  # Reemplazar con tu clave
-   ```
+4. Crea o edita tu archivo `.env` y define:
+    ```env
+    GROQ_API_KEY=tu_clave_groq_aqui
+    SECRET_KEY=tu_clave_secreta_jwt
+    DB_HOST=localhost
+    DB_USER=root
+    DB_PASSWORD=tu_password_mysql
+    DB_NAME=text_processor_db
+    ```
 
 ### Opción 2: Usar Ollama (Totalmente local)
 
@@ -91,6 +100,11 @@ uvicorn main:app --reload
 ### Acceder a la aplicación
 
 Abre tu navegador y ve a:
+```
+http://localhost:8001
+```
+
+Si inicias con uvicorn (sin puerto explícito), usa:
 ```
 http://localhost:8000
 ```
@@ -142,6 +156,24 @@ Procesa un texto y devuelve resultados
 }
 ```
 
+### POST `/api/register`
+Registra usuario y devuelve token JWT
+
+### POST `/api/token`
+Inicia sesión y devuelve token JWT
+
+### POST `/api/save-summary`
+Guarda resumen del usuario autenticado
+
+### GET `/api/my-summaries`
+Devuelve resúmenes guardados del usuario autenticado
+
+### POST `/api/ocr`
+Extrae texto desde imagen
+
+### POST `/api/pdf-ocr`
+Extrae texto desde PDF
+
 ### GET `/health`
 Verifica que el servidor está activo
 
@@ -153,6 +185,8 @@ Verifica que el servidor está activo
 
 ## Deployment 🌐
 
+Guía rápida centralizada: `DEPLOY.md`
+
 ### Desplegar en Render
 
 1. Sube tu código a GitHub
@@ -163,7 +197,14 @@ Verifica que el servidor está activo
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 6. Agrega variables de entorno:
-   - `GROQ_API_KEY`: Tu clave de Groq
+    - `GROQ_API_KEY`
+    - `SECRET_KEY`
+    - `DB_HOST`
+    - `DB_USER`
+    - `DB_PASSWORD`
+    - `DB_NAME`
+
+> Nota OCR: si usarás OCR en producción, instala dependencias del sistema para Linux (`tesseract-ocr` y `poppler-utils`).
 
 ### Desplegar en Railway
 
@@ -209,6 +250,11 @@ pip install -r requirements.txt
 - Asegúrate de que Ollama está corriendo
 - Verifica que está en `http://localhost:11434`
 - Prueba con: `curl http://localhost:11434/api/tags`
+
+### Error MySQL 1045 (Access denied)
+- Verifica que `DB_USER` y `DB_PASSWORD` en `.env` sean correctos
+- Si `DB_PASSWORD` está vacío, MySQL intentará conectar sin contraseña
+- Confirma que el usuario tenga permisos sobre `DB_NAME`
 
 ### La aplicación es lenta
 - Si usas Ollama: Tu computadora podría no tener suficientes recursos
@@ -273,13 +319,14 @@ $env:GROQ_API_KEY="tu-clave-aqui"
 - Requiere conexión a internet (para Groq)
 - Los modelos de IA tienen un tiempo de respuesta variable
 - La calidad de los resultados depende del modelo de IA
+- OCR en producción requiere paquetes del sistema (Tesseract/Poppler)
 
 ## Mejoras futuras 🚀
 
-- [ ] Soporte para múltiples idiomas
-- [ ] Guardar histórico de procesos
+- [x] Soporte para múltiples idiomas
+- [x] Guardar histórico de procesos por usuario
 - [ ] Exportar resultados a PDF
-- [ ] Autenticación de usuarios
+- [x] Autenticación de usuarios
 - [ ] Integración con más APIs de IA
 - [ ] Análisis de sentimientos
 - [ ] Extracción automática de términos clave
@@ -316,4 +363,4 @@ Si tienes preguntas o problemas:
 
 **¡Hecho con ❤️ usando FastAPI!**
 
-Última actualización: 2024
+Última actualización: 2026

@@ -81,10 +81,9 @@ Sitio: https://console.groq.com
 
 ### PASO 2: Configurar (1 minuto)
 ```
-Archivo: main.py
-Línea: ~50
-Busca: GROQ_API_KEY = "tu_clave_groq_aqui"
-Reemplaza con tu clave real
+Archivo: .env
+Configura: GROQ_API_KEY=tu_clave_real
+Completa también: SECRET_KEY y DB_*
 ```
 
 ### PASO 3: Ejecutar (Ahora!)
@@ -98,7 +97,7 @@ source venv/bin/activate
 python main.py
 
 # Luego abre en navegador:
-http://localhost:8000
+http://localhost:8001
 ```
 
 ---
@@ -241,9 +240,9 @@ Antes de usar la app:
 
 ### Ahora (Inmediato)
 1. Obtén API key
-2. Edita main.py
+2. Configura .env
 3. Ejecuta `python main.py`
-4. Prueba en http://localhost:8000
+4. Prueba en http://localhost:8001
 
 ### Próximas horas
 - Experimenta con textos
@@ -361,9 +360,9 @@ Paso: docker build + run
 1. Lee este archivo → ✓ Lo estás haciendo!
 2. Lee COMIENZA_AQUI.md
 3. Obtén API key de Groq
-4. Edita main.py
+4. Configura .env
 5. Ejecuta python main.py
-6. Abre http://localhost:8000
+6. Abre http://localhost:8001
 7. ¡Disfruta tu app!
 ```
 
@@ -382,7 +381,7 @@ Paso: docker build + run
 ║   ✓ Fácil de expandir                                         ║
 ║                                                               ║
 ║       Próximo paso: python main.py                           ║
-║       Luego abre: http://localhost:8000                      ║
+║       Luego abre: http://localhost:8001                      ║
 ║                                                               ║
 ║              ¡Bienvenido! 🚀 ¡Éxito!                        ║
 ║                                                               ║

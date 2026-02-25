@@ -50,9 +50,9 @@
 
 ### 2️⃣ Configurar clave
 ```
-➜ Abre: main.py
-➜ Busca: GROQ_API_KEY = "tu_clave_groq_aqui"
-➜ Reemplaza con tu clave real
+➜ Abre: .env
+➜ Configura: GROQ_API_KEY=tu_clave_real
+➜ Completa también SECRET_KEY y DB_*
 ```
 
 ### 3️⃣ Ejecutar
@@ -66,7 +66,7 @@ source venv/bin/activate
 python main.py
 ```
 
-**✅ Abre: http://localhost:8000**
+**✅ Abre: http://localhost:8001**
 
 ---
 
@@ -343,7 +343,7 @@ Antes de usar, verifica:
 □ Entorno virtual creado
 □ Dependencias instaladas
 □ GROQ_API_KEY configurada
-□ Puerto 8000 disponible
+□ Puerto 8001 disponible
 □ main.py sin errores
 ```
 
@@ -355,7 +355,7 @@ Antes de usar, verifica:
 ║                   🎉 ¡LISTO PARA EMPEZAR! 🎉                           ║
 ║                                                                          ║
 ║                    Ejecuta: python main.py                              ║
-║                    Abre: http://localhost:8000                          ║
+║                    Abre: http://localhost:8001                          ║
 ║                                                                          ║
 ║              ¡Que disfrutes procesando textos con IA!                   ║
 ║                                                                          ║
